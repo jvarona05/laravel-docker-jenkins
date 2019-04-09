@@ -1,0 +1,51 @@
+version: '2'
+services:
+
+  # The Application
+  app:
+    container_name: app
+    build:
+      context: ./
+      dockerfile: app.dockerfile
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    environment:
+      - "DB_PORT=3306"
+      - "DB_HOST=database"
+    #command:
+      # this command for dev enviorment only
+      # npm run production for production
+      # runs laravel mix/eslint/webpack in the background
+      # to detect changes, rebuild js and css and warn / error if eslint rules are hurt
+      #-npm run dev
+      # !! racecondition here! If we really say npm install inside the container after build, this command might fail ?
+  # The Web Server
+  web:
+    container_name: web
+    build:
+      context: ./
+      dockerfile: web.dockerfile
+    working_dir: /var/www
+    volumes:
+      - ./public:/var/www/public
+    ports:
+      - 8080:80
+
+  # The Database
+  database:
+    container_name: database
+    # for mariadb change image to for example: dydx/alpine-mariadb
+    image: mariadb
+    volumes:
+      - dbdata:/var/lib/mysql
+    environment:
+      - "MYSQL_DATABASE="
+      - "MYSQL_USER="
+      - "MYSQL_PASSWORD="
+      - "MYSQL_ROOT_PASSWORD="
+    ports:
+        - "33061:3306"
+
+volumes:
+  dbdata:
